@@ -23,6 +23,7 @@
  * */
 
 #include <limits.h>
+#include <ctype.h>
 #include "resp.h"
 
 respObject *createRespObject(int type) {
@@ -70,6 +71,7 @@ void freeRespObject(respObject *r) {
 
 respObject *createRespArray(size_t elements) {
   respObject *r;
+  int i;
 
   if (elements > RESP_ARRAY_MAX_LEN) {
     return NULL;
@@ -83,7 +85,11 @@ respObject *createRespArray(size_t elements) {
   if (r->element == NULL) {
     freeRespObject(r);
     return NULL;
-  };
+  }
+
+  for (i = 0; i < r->elements; i++) {
+    r->element[i] = NULL;
+  }
 
   return r;
 }
@@ -123,7 +129,7 @@ respObject *createRespString(int type, char *str) {
       return NULL;
     }
 
-    r->str = (char *)malloc(sizeof(char)*(len+1));
+    r->str = (unsigned char *)malloc(sizeof(unsigned char)*(len+1));
 
     if (r->str == NULL) {
       freeRespObject(r);
@@ -140,7 +146,7 @@ respObject *createRespString(int type, char *str) {
   return NULL;
 }
 
-respObject *createRespBulk(char *str, int len) {
+respObject *createRespBulk(unsigned char *str, int len) {
   respObject *r;
 
   if (len > RESP_STRING_MAX_LEN) {
@@ -153,7 +159,7 @@ respObject *createRespBulk(char *str, int len) {
     return NULL;
   }
 
-  r->str = (char *)malloc(sizeof(char)*(len+1));
+  r->str = (unsigned char *)malloc(sizeof(unsigned char)*(len+1));
 
   if (r->str == NULL) {
     freeRespObject(r);
@@ -167,17 +173,17 @@ respObject *createRespBulk(char *str, int len) {
   return r;
 }
 
-int respNextLine(char *src) {
+int respNextLine(unsigned char *src) {
   int i;
   for (i = 1; i < RESP_LINE_MAX_LEN; i++) {
     if (src[i] == '\n' && src[i - 1] == '\r') {
-      return i +1;
+      return i + 1;
     }
   }
   return -1;
 }
 
-int respDecode(respObject **r, char *src) {
+int respDecode(respObject **r, unsigned char *src) {
   int offset;
 
   int buflen;
@@ -191,23 +197,29 @@ int respDecode(respObject **r, char *src) {
 
   *r = NULL;
 
-  src[offset-2] = '\0';
 
   switch (src[0]) {
     case ':':
       *r = createRespInteger((int)respAtoi(src+1));
     break;
     case '+':
-      *r = createRespString(RESP_OBJECT_STATUS, src+1);
+      src[offset-2] = '\0';
+      *r = createRespString(RESP_OBJECT_STATUS, (char *)src+1);
     break;
     case '-':
-      *r = createRespString(RESP_OBJECT_ERROR, src+1);
+      src[offset-2] = '\0';
+      *r = createRespString(RESP_OBJECT_ERROR, (char *)src+1);
     break;
     case '$':
       /* Get length of the buffer */
       buflen = respAtoi(src+1);
       if (buflen < 0 || buflen > RESP_STRING_MAX_LEN) {
-        return -1;
+        return -2;
+      }
+
+      /* Making sure we have a message. This is possible but very unlikely. */
+      if (src[offset+buflen] != '\r' || src[offset+buflen+1] != '\n') {
+        return -4;
       }
 
       /* Reading length of the buffer. */
@@ -232,19 +244,20 @@ int respDecode(respObject **r, char *src) {
         }
         offset += t;
       }
+
     break;
   }
 
   if (*r == NULL) {
-    return -1;
+    return -4;
   }
 
   return offset;
 }
 
-int respEncode(respObject *r, char *dest) {
+int respEncode(respObject *r, unsigned char *dest) {
   int l, j;
-  char sizebuf[RESP_MAX_ITOA_LEN];
+  unsigned char sizebuf[RESP_MAX_ITOA_LEN];
 
   switch (r->type) {
     case RESP_OBJECT_INTEGER:
@@ -311,8 +324,8 @@ int respEncode(respObject *r, char *dest) {
 }
 
 /* Stolen from https://github.com/redis/hiredis/blob/ec229678c22e673e8d48070593f7b028a514882a/sds.c#L299 */
-int respItoa(char *s, int value) {
-  char *p, aux;
+int respItoa(unsigned char *s, int value) {
+  unsigned char *p, aux;
   unsigned int v;
   size_t l;
 
@@ -343,7 +356,7 @@ int respItoa(char *s, int value) {
 }
 
 /* Stolen from http://tinodidriksen.com/2010/02/16/cpp-convert-string-to-int-speed/ */
-int respAtoi(const char *p) {
+int respAtoi(const unsigned char *p) {
   int x = 0;
   int neg = 0;
   if (*p == '-') {

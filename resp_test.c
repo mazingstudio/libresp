@@ -1,8 +1,54 @@
-#include "resp.h"
 #include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stddef.h>
 
-void memprint(char *buf, int len) {
+#include "resp.h"
+
+void respPrint(respObject *r) {
+  int i;
+
+  printf("(%d): ", r->type);
+
+  switch (r->type) {
+    case RESP_OBJECT_BINARY:
+      for (i = 0; i < r->len; i++) {
+        if (isprint(r->str[i])) {
+          printf("%c", r->str[i]);
+        } else {
+          printf("\\0x%02X", r->str[i]);
+        };
+      };
+      printf("\r\n");
+    break;
+  }
+}
+
+
+int ustrncmp(unsigned char *a, unsigned char *b, int l) {
+  int i;
+  for (i = 0; i < l; i++) {
+    if (*(a+i) != *(b+i)) {
+      return *(a+i) < *(b + i) ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+int ustrcmp(unsigned char *a, unsigned char *b) {
+  int i;
+  for (i = 0; ; i++) {
+    if (*(a+i) != *(b+i)) {
+      return *(a+i) < *(b + i) ? -1 : 1;
+    }
+    if (*(a+i) == '\0') {
+      break;
+    }
+  }
+  return 0;
+}
+
+void memprint(unsigned char *buf, int len) {
 	int i;
 	for (i = 0; i < len; i++) {
 		if (isprint(buf[i])) {
@@ -15,11 +61,11 @@ void memprint(char *buf, int len) {
 }
 
 int main() {
-	char *buf;
+	unsigned char *buf;
   int offset;
 	respObject *r;
 
-	buf = (char *)malloc(sizeof(char)*255);
+	buf = (unsigned char *)malloc(sizeof(unsigned char)*512);
 
 	r = createRespNil();
 	assert(respEncode(r, buf) == 5);
@@ -46,7 +92,7 @@ int main() {
 	assert(memcmp(buf, "-Fail\r\n\0", 8) == 0);
   freeRespObject(r);
 
-	r = createRespBulk("Bulk\0String", 11);
+	r = createRespBulk((unsigned char *)"Bulk\0String", 11);
 	assert(respEncode(r, buf) == 18);
 	assert(memcmp(buf, "$11\r\nBulk\0String\r\n\0", 19) == 0);
   freeRespObject(r);
@@ -65,7 +111,7 @@ int main() {
 
 	r->element[0] = createRespString(RESP_OBJECT_STATUS, "Hello\0");
 	r->element[1] = createRespString(RESP_OBJECT_ERROR, "World\0");
-	r->element[2] = createRespBulk("Again", 5);
+	r->element[2] = createRespBulk((unsigned char *)"Again", 5);
 	r->element[3] = createRespInteger(1234);
 	r->element[4] = createRespNil();
 
@@ -105,7 +151,7 @@ int main() {
 
   assert(offset == 20);
   assert(r->type == RESP_OBJECT_STATUS);
-  assert(strcmp(r->str, "My status message") == 0);
+  assert(ustrcmp(r->str, (unsigned char *)"My status message") == 0);
 
   freeRespObject(r);
 
@@ -115,7 +161,7 @@ int main() {
 
   assert(offset == 19);
   assert(r->type == RESP_OBJECT_ERROR);
-  assert(strcmp(r->str, "My error message") == 0);
+  assert(ustrcmp(r->str, (unsigned char *)"My error message") == 0);
 
   freeRespObject(r);
 
@@ -125,7 +171,8 @@ int main() {
 
   assert(offset == 20);
   assert(r->type == RESP_OBJECT_BINARY);
-  assert(strncmp(r->str, "Hello\0World\0!", 13) == 0);
+  assert(ustrncmp(r->str, (unsigned char *)"Hello\0World\0!", 13) == 0);
+  respPrint(r);
 
   freeRespObject(r);
 
@@ -139,15 +186,52 @@ int main() {
   assert(r->element != NULL);
 
   assert(r->element[0]->type == RESP_OBJECT_ERROR);
-  assert(strcmp(r->element[0]->str, "Hello") == 0);
+  assert(ustrcmp(r->element[0]->str, (unsigned char *)"Hello") == 0);
 
   assert(r->element[1]->type == RESP_OBJECT_STATUS);
-  assert(strcmp(r->element[1]->str, "World") == 0);
+  assert(ustrcmp(r->element[1]->str, (unsigned char *)"World") == 0);
 
   assert(r->element[2]->type == RESP_OBJECT_INTEGER);
   assert(r->element[2]->integer == 1234);
 
   freeRespObject(r);
+
+
+  /* Incomplete bulk message. */
+  memcpy(buf, "$11\r\n", 5);
+  offset = respDecode(&r, buf);
+  assert(offset < 0);
+
+  memcpy(buf, "$11\r\nHello World\r\n", 18);
+  offset = respDecode(&r, buf);
+  assert(offset == 18);
+
+  memcpy(buf, "$12\r\n", 5);
+  offset = respDecode(&r, buf);
+  printf("offset: %d\n", offset);
+  assert(offset < 0);
+
+  memcpy(buf, "$12\r\nHello World!\r\n", 19);
+  offset = respDecode(&r, buf);
+  printf("offset: %d\n", offset);
+  assert(offset == 19);
+
+  /* Incomplete array message. */
+  memcpy(buf, "*3\r\n", 4);
+  offset = respDecode(&r, buf);
+  assert(offset < 0);
+
+  memcpy(buf, "*3\r\n:123\r\n", 10);
+  offset = respDecode(&r, buf);
+  assert(offset < 0);
+
+  memcpy(buf, "*3\r\n:123\r\n:4567\r\n", 17);
+  offset = respDecode(&r, buf);
+  assert(offset < 0);
+
+  memcpy(buf, "*3\r\n:123\r\n:4567\r\n:8\r\n", 21);
+  offset = respDecode(&r, buf);
+  assert(offset == 21);
 
   return 0;
 }

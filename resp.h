@@ -23,9 +23,8 @@
  * */
 
 #include <stddef.h>
-#include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+#include <stdlib.h>
 
 #define RESP_OBJECT_BINARY    1
 #define RESP_OBJECT_ARRAY     2
@@ -49,7 +48,7 @@ typedef struct respObject {
   /* Length of str buffer */
   int len;
   /* Buffer for status, error and bulk values */
-  char *str;
+  unsigned char *str;
   /* Number of elements in element array */
   size_t elements;
   /* Elements of RESP_OBJECT_ARRAY */
@@ -74,7 +73,7 @@ respObject *createRespInteger(int value);
 respObject *createRespNil();
 
 /* createRespBulk creates a binary-safe RESP object with the given data. */
-respObject *createRespBulk(char *data, int dataLength);
+respObject *createRespBulk(unsigned char *data, int dataLength);
 
 /* createRespString creates a string RESP object (delimited by \0) of the given
  * type, which must be either RESP_OBJECT_STATUS or RESP_OBJECT_ERROR. */
@@ -82,13 +81,13 @@ respObject *createRespString(int type, char *data);
 
 /* respDecode reads the encoded RESP input from src and decodes it into dest.
  * */
-int respDecode(respObject **dest, char *src);
+int respDecode(respObject **dest, unsigned char *src);
 
 /* respEncode encodes the src RESP object into dest. */
-int respEncode(respObject *src, char *dest);
+int respEncode(respObject *src, unsigned char *dest);
 
-/* respItoa provides fast int to array of chars conversion. */
-int respItoa(char *to, int from);
+/* respItoa provides fast int to array of unsigned chars conversion. */
+int respItoa(unsigned char *to, int from);
 
-/* respAtoi provides fast array of chars to int conversion. */
-int respAtoi(const char * from);
+/* respAtoi provides fast array of unsigned chars to int conversion. */
+int respAtoi(const unsigned char * from);
