@@ -22,8 +22,13 @@
  *
  * */
 
+#include <string.h>
+#include <stdlib.h>
+
+#include <stddef.h>
 #include <limits.h>
 #include <ctype.h>
+
 #include "resp.h"
 
 respObject *createRespObject(int type) {

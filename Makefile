@@ -1,5 +1,13 @@
-all:
-	gcc -Wall -pedantic -o resp_test resp.h resp.c resp_test.c
+TEST_TARGET := resp_test.o
+
+test: libresp.so
+	gcc -L$(PWD) -Wall -pedantic -o $(TEST_TARGET) resp_test.c -lresp && \
+	LD_LIBRARY_PATH=$(PWD):$$LD_LIBRARY_PATH ./$(TEST_TARGET)
+
+libresp.so:
+	gcc -c -Wall -Werror -fpic resp.c
+	gcc -shared -o libresp.so resp.o
 
 clean:
-	rm -f resp_test
+	rm -f *.o
+	rm -f *.so

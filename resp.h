@@ -22,9 +22,13 @@
  *
  * */
 
-#include <stddef.h>
-#include <string.h>
-#include <stdlib.h>
+#ifndef MAKERWORKSHOP_RESP
+#define MAKERWORKSHOP_RESP
+
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 
 #define RESP_OBJECT_BINARY    1
 #define RESP_OBJECT_ARRAY     2
@@ -91,3 +95,9 @@ int respItoa(unsigned char *to, int from);
 
 /* respAtoi provides fast array of unsigned chars to int conversion. */
 int respAtoi(const unsigned char * from);
+
+#ifdef  __cplusplus
+} /* closes extern "C" */
+#endif
+
+#endif

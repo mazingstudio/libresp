@@ -1,3 +1,7 @@
+#ifndef ARDUINO
+
+#include <string.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -49,74 +53,74 @@ int ustrcmp(unsigned char *a, unsigned char *b) {
 }
 
 void memprint(unsigned char *buf, int len) {
-	int i;
-	for (i = 0; i < len; i++) {
-		if (isprint(buf[i])) {
-			printf("%c", buf[i]);
-		} else {
-			printf("\\0x%02X", buf[i]);
-		};
-	};
-	printf("\r\n");
+  int i;
+  for (i = 0; i < len; i++) {
+    if (isprint(buf[i])) {
+      printf("%c", buf[i]);
+    } else {
+      printf("\\0x%02X", buf[i]);
+    };
+  };
+  printf("\r\n");
 }
 
 int main() {
-	unsigned char *buf;
+  unsigned char *buf;
   int offset;
-	respObject *r;
+  respObject *r;
 
-	buf = (unsigned char *)malloc(sizeof(unsigned char)*512);
+  buf = (unsigned char *)malloc(sizeof(unsigned char)*512);
 
-	r = createRespNil();
-	assert(respEncode(r, buf) == 5);
-	assert(memcmp(buf, "$-1\r\n\0", 6) == 0);
+  r = createRespNil();
+  assert(respEncode(r, buf) == 5);
+  assert(memcmp(buf, "$-1\r\n\0", 6) == 0);
   freeRespObject(r);
 
-	r = createRespString(RESP_OBJECT_STATUS, "OK\0");
-	assert(respEncode(r, buf) == 5);
-	assert(memcmp(buf, "+OK\r\n\0", 6) == 0);
+  r = createRespString(RESP_OBJECT_STATUS, "OK\0");
+  assert(respEncode(r, buf) == 5);
+  assert(memcmp(buf, "+OK\r\n\0", 6) == 0);
   freeRespObject(r);
 
-	r = createRespString(RESP_OBJECT_STATUS, "OK\0");
-	assert(respEncode(r, buf) == 5);
-	assert(memcmp(buf, "+OK\r\n\0", 6) == 0);
+  r = createRespString(RESP_OBJECT_STATUS, "OK\0");
+  assert(respEncode(r, buf) == 5);
+  assert(memcmp(buf, "+OK\r\n\0", 6) == 0);
   freeRespObject(r);
 
-	r = createRespString(RESP_OBJECT_ERROR, "Fail\0");
-	assert(respEncode(r, buf) == 7);
-	assert(memcmp(buf, "-Fail\r\n\0", 8) == 0);
+  r = createRespString(RESP_OBJECT_ERROR, "Fail\0");
+  assert(respEncode(r, buf) == 7);
+  assert(memcmp(buf, "-Fail\r\n\0", 8) == 0);
   freeRespObject(r);
 
-	r = createRespString(RESP_OBJECT_ERROR, "Fail\0");
-	assert(respEncode(r, buf) == 7);
-	assert(memcmp(buf, "-Fail\r\n\0", 8) == 0);
+  r = createRespString(RESP_OBJECT_ERROR, "Fail\0");
+  assert(respEncode(r, buf) == 7);
+  assert(memcmp(buf, "-Fail\r\n\0", 8) == 0);
   freeRespObject(r);
 
-	r = createRespBulk((unsigned char *)"Bulk\0String", 11);
-	assert(respEncode(r, buf) == 18);
-	assert(memcmp(buf, "$11\r\nBulk\0String\r\n\0", 19) == 0);
+  r = createRespBulk((unsigned char *)"Bulk\0String", 11);
+  assert(respEncode(r, buf) == 18);
+  assert(memcmp(buf, "$11\r\nBulk\0String\r\n\0", 19) == 0);
   freeRespObject(r);
 
-	r = createRespInteger(1234);
-	assert(respEncode(r, buf) == 7);
-	assert(memcmp(buf, ":1234\r\n\0", 8) == 0);
+  r = createRespInteger(1234);
+  assert(respEncode(r, buf) == 7);
+  assert(memcmp(buf, ":1234\r\n\0", 8) == 0);
   freeRespObject(r);
 
-	r = createRespInteger(-5678);
-	assert(respEncode(r, buf) == 8);
-	assert(memcmp(buf, ":-5678\r\n\0", 9) == 0);
+  r = createRespInteger(-5678);
+  assert(respEncode(r, buf) == 8);
+  assert(memcmp(buf, ":-5678\r\n\0", 9) == 0);
   freeRespObject(r);
 
-	r = createRespArray(5);
+  r = createRespArray(5);
 
-	r->element[0] = createRespString(RESP_OBJECT_STATUS, "Hello\0");
-	r->element[1] = createRespString(RESP_OBJECT_ERROR, "World\0");
-	r->element[2] = createRespBulk((unsigned char *)"Again", 5);
-	r->element[3] = createRespInteger(1234);
-	r->element[4] = createRespNil();
+  r->element[0] = createRespString(RESP_OBJECT_STATUS, "Hello\0");
+  r->element[1] = createRespString(RESP_OBJECT_ERROR, "World\0");
+  r->element[2] = createRespBulk((unsigned char *)"Again", 5);
+  r->element[3] = createRespInteger(1234);
+  r->element[4] = createRespNil();
 
-	assert(respEncode(r, buf) == 43);
-	assert(memcmp(buf, "*5\r\n+Hello\r\n-World\r\n$5\r\nAgain\r\n:1234\r\n$-1\r\n\0", 44) == 0);
+  assert(respEncode(r, buf) == 43);
+  assert(memcmp(buf, "*5\r\n+Hello\r\n-World\r\n$5\r\nAgain\r\n:1234\r\n$-1\r\n\0", 44) == 0);
   freeRespObject(r);
 
   /* Reading replies. */
@@ -172,7 +176,6 @@ int main() {
   assert(offset == 20);
   assert(r->type == RESP_OBJECT_BINARY);
   assert(ustrncmp(r->str, (unsigned char *)"Hello\0World\0!", 13) == 0);
-  respPrint(r);
 
   freeRespObject(r);
 
@@ -208,12 +211,10 @@ int main() {
 
   memcpy(buf, "$12\r\n", 5);
   offset = respDecode(&r, buf);
-  printf("offset: %d\n", offset);
   assert(offset < 0);
 
   memcpy(buf, "$12\r\nHello World!\r\n", 19);
   offset = respDecode(&r, buf);
-  printf("offset: %d\n", offset);
   assert(offset == 19);
 
   /* Incomplete array message. */
@@ -233,5 +234,9 @@ int main() {
   offset = respDecode(&r, buf);
   assert(offset == 21);
 
+  printf("OK!\n");
+
   return 0;
 }
+
+#endif
