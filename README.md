@@ -9,11 +9,14 @@ in production.
 
 ## How to install on Arduino
 
-[Download][2] and uncompress the latest .ZIP, a folder named `libresp-master`
-will be created, rename the uncompressed folder to `libresp` and place it into
-your Arduino's libraries folder, on Linux this could be
-`/usr/share/arduino/libraries/` and on Mac it should be
-`Documents/Arduino/libraries/`.
+Create new a folder named `MakerWorkshop` within the Arduino's library folder.
+If you're on Linux this could be `/usr/share/arduino/libraries/` and on Mac it
+should be `Documents/Arduino/libraries/`. If that folder already exists you
+don't need to create it again.
+
+Download and uncompress the [latest .ZIP package][1], a folder named
+`libresp-master` will be created, rename the uncompressed folder to just `resp`
+and put it into your recently created `MakerWorkshop` folder.
 
 See the Arduino's documentation on [importing libraries][3] for more
 information.
