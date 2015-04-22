@@ -37,9 +37,16 @@ extern "C" {
 #define RESP_OBJECT_STATUS    5
 #define RESP_OBJECT_ERROR     6
 
-#define RESP_ARRAY_MAX_LEN    255
+#ifdef ARDUINO
+#define RESP_ARRAY_MAX_LEN    16
 #define RESP_STRING_MAX_LEN   255
-#define RESP_LINE_MAX_LEN     1024
+#define RESP_LINE_MAX_LEN     255
+#else
+#define RESP_ARRAY_MAX_LEN    1024
+#define RESP_STRING_MAX_LEN   1024*64
+#define RESP_LINE_MAX_LEN     RESP_STRING_MAX_LEN*8
+#endif
+
 
 #define RESP_MAX_ITOA_LEN     7
 
