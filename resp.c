@@ -47,7 +47,7 @@ respObject *createRespObject(int type) {
 }
 
 void freeRespObject(respObject *r) {
-  size_t i;
+  unsigned int i;
 
   switch(r->type) {
     case RESP_OBJECT_INTEGER:
@@ -74,7 +74,7 @@ void freeRespObject(respObject *r) {
   free(r);
 }
 
-respObject *createRespArray(size_t elements) {
+respObject *createRespArray(unsigned int elements) {
   respObject *r;
   int i;
 
@@ -332,7 +332,7 @@ int respEncode(respObject *r, unsigned char *dest) {
 int respItoa(unsigned char *s, int value) {
   unsigned char *p, aux;
   unsigned int v;
-  size_t l;
+  unsigned int l;
 
   /* Generate the string representation, this method produces
   * an reversed string. */

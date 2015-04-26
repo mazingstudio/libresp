@@ -61,7 +61,7 @@ typedef struct respObject {
   /* Buffer for status, error and bulk values */
   unsigned char *str;
   /* Number of elements in element array */
-  size_t elements;
+  unsigned int elements;
   /* Elements of RESP_OBJECT_ARRAY */
   struct respObject **element;
 } respObject;
@@ -74,7 +74,7 @@ respObject *createRespObject(int type);
 void freeRespObject(respObject *);
 
 /* createRespArray allocates an array of the given length. */
-respObject *createRespArray(size_t length);
+respObject *createRespArray(unsigned int length);
 
 /* createRespInteger creates a RESP object of type integer with the given
  * value. */
