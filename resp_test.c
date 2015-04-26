@@ -41,12 +41,9 @@ int ustrncmp(unsigned char *a, unsigned char *b, int l) {
 
 int ustrcmp(unsigned char *a, unsigned char *b) {
   int i;
-  for (i = 0; ; i++) {
+  for (i = 0; *(a+i) != '\0'; i++) {
     if (*(a+i) != *(b+i)) {
       return *(a+i) < *(b + i) ? -1 : 1;
-    }
-    if (*(a+i) == '\0') {
-      break;
     }
   }
   return 0;
@@ -155,6 +152,7 @@ int main() {
 
   assert(offset == 20);
   assert(r->type == RESP_OBJECT_STATUS);
+  assert(r->len == 17);
   assert(ustrcmp(r->str, (unsigned char *)"My status message") == 0);
 
   freeRespObject(r);
@@ -165,6 +163,7 @@ int main() {
 
   assert(offset == 19);
   assert(r->type == RESP_OBJECT_ERROR);
+  assert(r->len == 16);
   assert(ustrcmp(r->str, (unsigned char *)"My error message") == 0);
 
   freeRespObject(r);
@@ -175,7 +174,9 @@ int main() {
 
   assert(offset == 20);
   assert(r->type == RESP_OBJECT_BINARY);
+  assert(r->len == 13);
   assert(ustrncmp(r->str, (unsigned char *)"Hello\0World\0!", 13) == 0);
+  assert(ustrncmp(r->str, (unsigned char *)"Hello\0World\0!\0", 14) == 0);
 
   freeRespObject(r);
 
@@ -190,9 +191,11 @@ int main() {
 
   assert(r->element[0]->type == RESP_OBJECT_ERROR);
   assert(ustrcmp(r->element[0]->str, (unsigned char *)"Hello") == 0);
+  assert(r->element[0]->len == 5);
 
   assert(r->element[1]->type == RESP_OBJECT_STATUS);
   assert(ustrcmp(r->element[1]->str, (unsigned char *)"World") == 0);
+  assert(r->element[1]->len == 5);
 
   assert(r->element[2]->type == RESP_OBJECT_INTEGER);
   assert(r->element[2]->integer == 1234);

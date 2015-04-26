@@ -173,8 +173,8 @@ respObject *createRespBulk(unsigned char *str, int len) {
 
   memcpy(r->str, str, len);
   r->str[len] = '\0';
-
   r->len = len;
+
   return r;
 }
 
@@ -201,7 +201,6 @@ int respDecode(respObject **r, unsigned char *src) {
   }
 
   *r = NULL;
-
 
   switch (src[0]) {
     case ':':
