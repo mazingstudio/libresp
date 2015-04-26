@@ -134,7 +134,7 @@ respObject *createRespString(int type, char *str) {
       return NULL;
     }
 
-    r->str = (unsigned char *)malloc(sizeof(unsigned char)*(len+1));
+    r->str = (unsigned char *)malloc(sizeof(unsigned char)*len);
 
     if (r->str == NULL) {
       freeRespObject(r);
@@ -164,7 +164,7 @@ respObject *createRespBulk(unsigned char *str, int len) {
     return NULL;
   }
 
-  r->str = (unsigned char *)malloc(sizeof(unsigned char)*(len+1));
+  r->str = (unsigned char *)malloc(sizeof(unsigned char)*len);
 
   if (r->str == NULL) {
     freeRespObject(r);
