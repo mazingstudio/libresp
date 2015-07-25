@@ -1,12 +1,13 @@
-TEST_TARGET := resp_test.o
+CC ?= gcc
+TEST_TARGET := resp_test
 
 test: libresp.so
-	gcc -L$(PWD) -Wall -pedantic -o $(TEST_TARGET) resp_test.c -lresp && \
-	LD_LIBRARY_PATH=$(PWD):$$LD_LIBRARY_PATH ./$(TEST_TARGET)
+	gcc -L$(PWD) -Wall -pedantic -o $(TEST_TARGET).o $(TEST_TARGET).c -lresp && \
+	LD_LIBRARY_PATH=$(PWD):$$LD_LIBRARY_PATH ./$(TEST_TARGET).o
 
 libresp.so:
-	gcc -c -Wall -Werror -fpic resp.c
-	gcc -shared -o libresp.so resp.o
+	$(CC) -c -Wall -Werror -fpic resp.c
+	$(CC) -shared -o libresp.so resp.o
 
 clean:
 	rm -f *.o
