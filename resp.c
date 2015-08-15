@@ -31,6 +31,7 @@
 
 #include "resp.h"
 
+// createRespObject allocates a new object of the given type.
 respObject *createRespObject(int type) {
   respObject *r;
   r = (respObject *)malloc(sizeof(respObject));
@@ -46,6 +47,7 @@ respObject *createRespObject(int type) {
   return r;
 }
 
+// freeRespObject frees the allocated memory of the given object.
 void freeRespObject(respObject *r) {
   unsigned int i;
 
@@ -74,6 +76,8 @@ void freeRespObject(respObject *r) {
   free(r);
 }
 
+// createRespArray allocates a RESP object of type array with the given number
+// of elements.
 respObject *createRespArray(unsigned int elements) {
   respObject *r;
   int i;
@@ -99,6 +103,8 @@ respObject *createRespArray(unsigned int elements) {
   return r;
 }
 
+// createRespInteger allocates a RESP object of type integer with the given
+// value.
 respObject *createRespInteger(int integer) {
   respObject *r;
 
@@ -109,6 +115,7 @@ respObject *createRespInteger(int integer) {
   return r;
 }
 
+// createRespNil allocates a RESP object of type nil.
 respObject *createRespNil() {
   respObject *r;
 
@@ -117,6 +124,8 @@ respObject *createRespNil() {
   return r;
 }
 
+// createRespString allocates a RESP object of type string with the given
+// value.
 respObject *createRespString(int type, char *str) {
   respObject *r;
   int len;
@@ -151,6 +160,7 @@ respObject *createRespString(int type, char *str) {
   return NULL;
 }
 
+// createRespBulk allocates a RESP object that is binary safe.
 respObject *createRespBulk(unsigned char *str, int len) {
   respObject *r;
 
@@ -178,6 +188,7 @@ respObject *createRespBulk(unsigned char *str, int len) {
   return r;
 }
 
+// respNextLine is an internal function used to read the next line to decode.
 int respNextLine(unsigned char *src) {
   int i;
   for (i = 1; i < RESP_LINE_MAX_LEN; i++) {
@@ -188,6 +199,7 @@ int respNextLine(unsigned char *src) {
   return -1;
 }
 
+// respDecode reads a RESP encoded message from src and dumps it into r.
 int respDecode(respObject **r, unsigned char *src) {
   int offset;
 
@@ -259,6 +271,7 @@ int respDecode(respObject **r, unsigned char *src) {
   return offset;
 }
 
+// respEncode marshals a RESP object into dest.
 int respEncode(respObject *r, unsigned char *dest) {
   int l, j;
   unsigned char sizebuf[RESP_MAX_ITOA_LEN];
