@@ -1,9 +1,10 @@
 # RESP (REdis Serialization Protocol) encoder and decoder for Arduino
 
-This is a [RESP][1] encoder/decoder library I'm using to play with some
-embedded stuff. It is standard C so it actually does not depend on Arduino.
+This is a [RESP][1] encoder/decoder library I'm using to play with
+Arduino-based thingies. [RESP][1] is standard C so it actually does not depend
+on Arduino.
 
-**Warning**: This project still lacks bechmarking and probably has some
+**Warning**: This project still lacks bechmarkis and it probably has some
 security issues regarding how strings are decoded, so maybe this is not a good
 time to use it in production.
 
