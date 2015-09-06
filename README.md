@@ -8,19 +8,10 @@ on Arduino.
 security issues regarding how strings are decoded, so maybe this is not a good
 time to use it in production.
 
-## How to install on Arduino
+## How to install (on Arduino)
 
-Create new a folder named `MakerWorkshop` within the Arduino's library folder.
-If you're on Linux this could be `/usr/share/arduino/libraries/` and on Mac it
-should be `Documents/Arduino/libraries/`. If that folder already exists you
-don't need to create it again.
-
-Download and uncompress the [latest .ZIP package][1], a folder named
-`libresp-master` will be created, rename the uncompressed folder to just `resp`
-and put it into your recently created `MakerWorkshop` folder.
-
-See the Arduino's documentation on [importing libraries][3] for more
-information.
+Download the latest [.ZIP package][2] and follow the official instructions on
+[importing a .ZIP library][3].
 
 ## License
 
