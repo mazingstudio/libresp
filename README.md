@@ -1,21 +1,16 @@
-# RESP (REdis Serialization Protocol) encoder and decoder for Arduino
+# RESP (REdis Serialization Protocol) encoder and decoder
 
-This is a [RESP][1] encoder/decoder library I'm using to play with
-Arduino-based thingies. [RESP][1] is standard C so it actually does not depend
-on Arduino.
+This is a [RESP][1] encoder/decoder library designed for Arduino, but it can be
+used with any C project.
 
-**Warning**: This project still lacks bechmarkis and it probably has some
-security issues regarding how strings are decoded, so maybe this is not a good
-time to use it in production.
-
-## How to install (on Arduino)
+## Using it as an Arduino library
 
 Download the latest [.ZIP package][2] and follow the official instructions on
 [importing a .ZIP library][3].
 
 ## License
 
-> Copyright (c) 2015 José Carlos Nieto, https://menteslibres.net/xiam
+> Copyright (c) 2015-today. Mazing Studio, https://mazing.io
 >
 > Permission is hereby granted, free of charge, to any person obtaining
 > a copy of this software and associated documentation files (the
@@ -37,5 +32,5 @@ Download the latest [.ZIP package][2] and follow the official instructions on
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 [1]: http://redis.io/topics/protocol
-[2]: https://github.com/makerworkshop/libresp/archive/master.zip
+[2]: https://github.com/mazingstudio/libresp/archive/master.zip
 [3]: http://www.arduino.cc/en/guide/libraries

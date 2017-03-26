@@ -47,6 +47,11 @@ extern "C" {
 #define RESP_LINE_MAX_LEN     RESP_STRING_MAX_LEN*8
 #endif
 
+#define RESP_ERROR_INCOMPLETE_MESSAGE   -100
+#define RESP_ERROR_CANNOT_ALLOCATE      -101
+#define RESP_ERROR_UNKNOWN_MESSAGE      -102
+#define RESP_ERROR_WRONG_FORMAT         -103
+
 
 #define RESP_MAX_ITOA_LEN     7
 
@@ -88,7 +93,7 @@ respObject *createRespBulk(unsigned char *data, int dataLength);
 
 /* createRespString creates a string RESP object (delimited by \0) of the given
  * type, which must be either RESP_OBJECT_STATUS or RESP_OBJECT_ERROR. */
-respObject *createRespString(int type, char *data);
+respObject *createRespString(int type, unsigned char *data);
 
 /* respDecode reads the encoded RESP input from src and decodes it into dest.
  * */

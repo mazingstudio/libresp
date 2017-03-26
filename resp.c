@@ -34,8 +34,8 @@
 // createRespObject allocates a new object of the given type.
 respObject *createRespObject(int type) {
   respObject *r;
-  r = (respObject *)malloc(sizeof(respObject));
 
+  r = (respObject *)malloc(sizeof(respObject));
   if (r == NULL) {
     return NULL;
   }
@@ -43,6 +43,9 @@ respObject *createRespObject(int type) {
   r->type = type;
   r->elements = 0;
   r->len = 0;
+
+  r->str = NULL;
+  r->element = NULL;
 
   return r;
 }
@@ -126,7 +129,7 @@ respObject *createRespNil() {
 
 // createRespString allocates a RESP object of type string with the given
 // value.
-respObject *createRespString(int type, char *str) {
+respObject *createRespString(int type, unsigned char *str) {
   respObject *r;
   int len;
 
@@ -137,14 +140,13 @@ respObject *createRespString(int type, char *str) {
   }
 
   if (type == RESP_OBJECT_ERROR || type == RESP_OBJECT_STATUS) {
-    r = createRespObject(type);
 
+    r = createRespObject(type);
     if (r == NULL) {
       return NULL;
     }
 
     r->str = (unsigned char *)malloc(sizeof(unsigned char)*len);
-
     if (r->str == NULL) {
       freeRespObject(r);
       return NULL;
@@ -152,7 +154,6 @@ respObject *createRespString(int type, char *str) {
 
     memcpy(r->str, str, len);
     r->str[len] = '\0';
-
     r->len = len;
     return r;
   }
@@ -207,39 +208,49 @@ int respDecode(respObject **r, unsigned char *src) {
   int i, t;
 
   offset = respNextLine(src);
-
   if (offset < 0) {
-    return -1;
+    return RESP_ERROR_INCOMPLETE_MESSAGE;
   }
 
   *r = NULL;
-
   switch (src[0]) {
     case ':':
       *r = createRespInteger((int)respAtoi(src+1));
+      if (*r == NULL) {
+        return RESP_ERROR_CANNOT_ALLOCATE;
+      }
     break;
     case '+':
       src[offset-2] = '\0';
-      *r = createRespString(RESP_OBJECT_STATUS, (char *)src+1);
+      *r = createRespString(RESP_OBJECT_STATUS, (unsigned char *)src+1);
+      if (*r == NULL) {
+        return RESP_ERROR_CANNOT_ALLOCATE;
+      }
     break;
     case '-':
       src[offset-2] = '\0';
-      *r = createRespString(RESP_OBJECT_ERROR, (char *)src+1);
+      *r = createRespString(RESP_OBJECT_ERROR, (unsigned char *)src+1);
+      if (*r == NULL) {
+        return RESP_ERROR_CANNOT_ALLOCATE;
+      }
     break;
     case '$':
       /* Get length of the buffer */
       buflen = respAtoi(src+1);
       if (buflen < 0 || buflen > RESP_STRING_MAX_LEN) {
-        return -2;
+        return RESP_ERROR_WRONG_FORMAT;
       }
 
-      /* Making sure we have a message. This is possible but very unlikely. */
+      /* Making sure we have a message. */
       if (src[offset+buflen] != '\r' || src[offset+buflen+1] != '\n') {
-        return -4;
+        return RESP_ERROR_INCOMPLETE_MESSAGE;
       }
 
       /* Reading length of the buffer. */
       *r = createRespBulk(src+offset, buflen);
+      if (*r == NULL) {
+        return RESP_ERROR_CANNOT_ALLOCATE;
+      }
 
       /* Length of the buffer plus \r\n */
       offset += buflen + 2;
@@ -248,24 +259,27 @@ int respDecode(respObject **r, unsigned char *src) {
       /* Get length of the buffer */
       buflen = respAtoi(src+1);
       if (buflen < 0 || buflen > RESP_ARRAY_MAX_LEN) {
-        return -1;
+        return RESP_ERROR_WRONG_FORMAT;
       }
 
       *r = createRespArray(buflen);
+      if (*r == NULL) {
+        return RESP_ERROR_CANNOT_ALLOCATE;
+      }
+
       for (i = 0; i < buflen; i++) {
         t = respDecode(&((*r)->element[i]), src+offset);
         if (t < 0) {
           freeRespObject(*r);
-          return -1;
+          return RESP_ERROR_INCOMPLETE_MESSAGE;
         }
         offset += t;
       }
-
     break;
   }
 
   if (*r == NULL) {
-    return -4;
+    return RESP_ERROR_UNKNOWN_MESSAGE;
   }
 
   return offset;
@@ -372,7 +386,8 @@ int respItoa(unsigned char *s, int value) {
   return l;
 }
 
-/* Stolen from http://tinodidriksen.com/2010/02/16/cpp-convert-string-to-int-speed/ */
+/* Stolen from
+ * http://tinodidriksen.com/2010/02/16/cpp-convert-string-to-int-speed/ */
 int respAtoi(const unsigned char *p) {
   int x = 0;
   int neg = 0;
