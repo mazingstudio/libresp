@@ -9,6 +9,11 @@ libresp.so:
 	$(CC) -c -Wall -Werror -fpic resp.c
 	$(CC) -shared -o libresp.so resp.o
 
+libresp.a:
+	$(CC) -c -Wall -Werror -fpic resp.c
+	ar r libresp.a resp.o
+
 clean:
 	rm -f *.o
 	rm -f *.so
+	rm -f *.a
